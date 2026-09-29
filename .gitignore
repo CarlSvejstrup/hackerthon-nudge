@@ -1,0 +1,9 @@
+.env
+nudge.db
+vendor/whatsapp-mcp/whatsapp-bridge/store/
+__pycache__/
+vendor/whatsapp-mcp/whatsapp-bridge/bridge
+vendor/whatsapp-mcp/whatsapp-bridge/store.old/
+.venv/
+*.db
+*.log

@@ -1,0 +1,486 @@
+<title>Nudge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+/* Layout: vertical deck of full-height slides, text column left, the phone or the data on the right. Left-aligned throughout. */
+:root {
+  --paper: #edf0f5;
+  --surface: #ffffff;
+  --ink: #1a2033;
+  --ink-2: #4c5673;
+  --line: #cbd2df;
+  --signal: #f0a12c;
+  --signal-ink: #8a5700;
+  --signal-wash: #fbe7c4;
+  --tick: #2f6fe0;
+  --bubble-me: #dce6fa;
+  --phone: #1a2033;
+  --phone-fg: #eef1f7;
+  --notif: rgba(255,255,255,.14);
+  --display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --body: "Newsreader", Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #121829; --surface: #1b2339; --ink: #e6eaf3; --ink-2: #a0aac2; --line: #2d3654;
+    --signal: #f5b447; --signal-ink: #f5b447; --signal-wash: #3a2f1c; --tick: #7aa8ff;
+    --bubble-me: #26345a; --phone: #070b16; --phone-fg: #eef1f7; --notif: rgba(255,255,255,.12);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #121829; --surface: #1b2339; --ink: #e6eaf3; --ink-2: #a0aac2; --line: #2d3654;
+  --signal: #f5b447; --signal-ink: #f5b447; --signal-wash: #3a2f1c; --tick: #7aa8ff;
+  --bubble-me: #26345a; --phone: #070b16; --phone-fg: #eef1f7; --notif: rgba(255,255,255,.12);
+  color-scheme: dark;
+}
+
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 16px; }
+.deck { height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { .deck { scroll-behavior: auto; } }
+
+.slide {
+  min-height: 100%; box-sizing: border-box; scroll-snap-align: start;
+  padding-block: clamp(40px, 8vh, 96px); padding-inline: max(16px, 6vw);
+  display: grid; align-content: center; gap: clamp(20px, 3vh, 36px);
+  border-bottom: 1px solid var(--line); position: relative;
+}
+.split { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 80px); align-items: center; }
+.split > * { min-width: 0; }
+@media (max-width: 860px) {
+  .deck { scroll-snap-type: y proximity; }
+  .split { grid-template-columns: minmax(0, 1fr); }
+}
+
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+h1 { font-size: clamp(3.4rem, 10vw, 8.5rem); line-height: .9; font-weight: 700; letter-spacing: -0.045em; }
+h2 { font-size: clamp(2rem, 4.4vw, 3.6rem); line-height: 1.02; font-weight: 700; max-width: 18ch; }
+h3 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
+p { margin: 0; }
+.lede { font-size: clamp(1.2rem, 1.9vw, 1.6rem); line-height: 1.45; color: var(--ink-2); max-width: 36ch; }
+.body { font-size: clamp(1.05rem, 1.4vw, 1.25rem); line-height: 1.55; max-width: 44ch; }
+.stack { display: grid; gap: clamp(16px, 2.4vh, 28px); align-content: start; }
+.note { font-family: var(--display); font-size: .9rem; color: var(--ink-2); }
+.num { font-variant-numeric: tabular-nums; }
+.slide-no { position: absolute; left: max(16px, 6vw); bottom: 18px; font-family: var(--display); font-size: .85rem; color: var(--ink-2); }
+
+/* Phone */
+.phone {
+  width: min(100%, 330px); aspect-ratio: 9 / 18.5; background: var(--phone); color: var(--phone-fg);
+  border-radius: 44px; padding: 22px 14px; box-sizing: border-box; justify-self: center;
+  display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden;
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--phone) 70%, var(--line)), 0 30px 60px -30px rgba(10, 16, 40, .45);
+}
+.phone::before { content: ""; position: absolute; top: 10px; left: 50%; width: 88px; height: 24px; border-radius: 14px; background: #000; transform: translateX(-50%); }
+.lock-time { font-family: var(--display); font-size: 4rem; font-weight: 600; text-align: center; margin-top: 34px; line-height: 1; letter-spacing: -0.03em; }
+.lock-date { font-family: var(--display); text-align: center; font-size: .95rem; opacity: .8; margin-bottom: 14px; }
+.notif { background: var(--notif); border-radius: 18px; padding: 11px 13px; display: grid; gap: 3px; backdrop-filter: blur(6px); }
+.notif-top { display: flex; justify-content: space-between; font-family: var(--display); font-size: .74rem; opacity: .75; }
+.notif-app { display: inline-flex; align-items: center; gap: 6px; }
+.notif-app::before { content: ""; width: 14px; height: 14px; border-radius: 4px; background: var(--signal); }
+.notif-title { font-family: var(--display); font-weight: 600; font-size: .95rem; line-height: 1.25; }
+.notif-body { font-family: var(--display); font-size: .86rem; line-height: 1.35; opacity: .88; }
+.phone-empty { margin: auto; font-family: var(--display); font-size: .9rem; opacity: .6; text-align: center; max-width: 20ch; }
+
+@keyframes arrive { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
+.arrive { animation: arrive .7s cubic-bezier(.2, .9, .25, 1.15) both; }
+.hero-notif { animation-delay: .9s; }
+@media (prefers-reduced-motion: reduce) { .arrive { animation: none; } }
+
+/* Chat bubbles */
+.chat { display: grid; gap: 8px; max-width: 460px; }
+.bubble { font-family: var(--display); font-size: 1rem; line-height: 1.35; padding: 9px 13px 7px; border-radius: 16px; max-width: 85%; background: var(--surface); border: 1px solid var(--line); }
+.bubble.me { justify-self: end; background: var(--bubble-me); border-color: transparent; }
+.bubble .meta { display: block; text-align: right; font-size: .72rem; color: var(--ink-2); margin-top: 2px; }
+.ticks { color: var(--tick); letter-spacing: -0.2em; margin-left: 4px; }
+.day { justify-self: center; font-family: var(--display); font-size: .78rem; color: var(--ink-2); padding: 3px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); }
+.gap-marker { justify-self: center; font-family: var(--display); font-size: .82rem; color: var(--signal-ink); padding: 4px 12px; border: 1px dashed var(--signal); border-radius: 8px; }
+
+/* Flags */
+.flags { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(18px, 2.4vw, 32px); }
+@media (max-width: 560px) { .flags { grid-template-columns: minmax(0, 1fr); } }
+.flag { display: grid; gap: 8px; padding-top: 14px; border-top: 3px solid var(--ink); }
+.flag.soft { border-top-color: var(--signal); }
+.flag p { font-size: 1.05rem; line-height: 1.5; color: var(--ink-2); }
+.flag .quote { font-family: var(--display); color: var(--ink); font-size: .98rem; }
+.who { font-family: var(--display); font-size: .8rem; color: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 20px; font-family: var(--display); font-size: .9rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 22px; height: 3px; background: var(--ink); display: inline-block; }
+.legend i.soft { background: var(--signal); }
+
+/* Rhythm */
+.rhythm { width: 100%; overflow-x: auto; }
+.rhythm svg { width: 100%; min-width: 520px; height: auto; display: block; }
+.rhythm text { font-family: var(--display); fill: var(--ink-2); font-size: 13px; }
+.rhythm .name { fill: var(--ink); font-size: 15px; font-weight: 600; }
+
+/* Pipeline */
+.pipe { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; counter-reset: step; }
+@media (max-width: 980px) { .pipe { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 28px; } }
+@media (max-width: 560px) { .pipe { grid-template-columns: minmax(0, 1fr); } }
+.step { counter-increment: step; display: grid; gap: 8px; padding: 18px 18px 0 0; border-top: 2px solid var(--line); position: relative; align-content: start; }
+.step::before { content: counter(step); font-family: var(--display); font-weight: 700; font-size: 2.2rem; line-height: 1; color: var(--ink-2); }
+.step.jev { border-top-color: var(--signal); }
+.step.jev::before { color: var(--signal-ink); }
+.step p { font-size: 1rem; line-height: 1.45; color: var(--ink-2); }
+.owner { font-family: var(--display); font-size: .8rem; font-weight: 600; color: var(--ink); }
+
+/* Demo */
+.demo { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+@media (max-width: 980px) { .demo { grid-template-columns: minmax(0, 1fr); } }
+.demo > * { min-width: 0; }
+.rows { display: grid; gap: 12px; }
+.row { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; }
+.row.act { border-color: var(--signal); }
+.row-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; justify-content: space-between; }
+.row-name { font-family: var(--display); font-weight: 600; font-size: 1.1rem; }
+.row-last { font-family: var(--display); font-size: .88rem; color: var(--ink-2); flex-basis: 100%; }
+.verdict { font-family: var(--display); font-size: .82rem; font-weight: 600; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--line); color: var(--ink-2); white-space: nowrap; }
+.row.act .verdict { background: var(--signal); border-color: var(--signal); color: #2a1a00; }
+.bars { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px 16px; }
+.bar { display: grid; gap: 4px; font-family: var(--display); font-size: .78rem; color: var(--ink-2); }
+.bar-top { display: flex; justify-content: space-between; gap: 6px; }
+.track { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--line) 70%, transparent); overflow: hidden; }
+.fill { height: 100%; width: 0; background: var(--ink-2); border-radius: 3px; transition: width .6s cubic-bezier(.3, .8, .3, 1); }
+.fill.yes { background: var(--signal); }
+.fill.code { background: var(--ink); }
+.controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+button {
+  font-family: var(--display); font-weight: 600; font-size: 1rem; color: var(--paper); background: var(--ink);
+  border: 0; border-radius: 99px; padding: 12px 22px; cursor: pointer;
+}
+button:hover { opacity: .9; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--signal); outline-offset: 3px; }
+.threshold { font-family: var(--display); font-size: .9rem; color: var(--ink-2); }
+
+/* Jev */
+.jev-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(18px, 3vw, 40px); }
+@media (max-width: 760px) { .jev-grid { grid-template-columns: minmax(0, 1fr); } }
+.fact { display: grid; gap: 6px; }
+.fact strong { font-family: var(--display); font-size: clamp(2rem, 3.6vw, 3rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.fact span { font-size: 1.05rem; line-height: 1.45; color: var(--ink-2); }
+.split-roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--line); }
+@media (max-width: 760px) { .split-roles { grid-template-columns: minmax(0, 1fr); } }
+.role { padding: 18px 18px 0 0; display: grid; gap: 6px; }
+.role p { color: var(--ink-2); font-size: 1.02rem; line-height: 1.45; }
+
+/* Search */
+.search { display: grid; gap: 14px; max-width: 560px; }
+.search input {
+  font: 500 1.15rem var(--display); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 14px; padding: 14px 16px; width: 100%; box-sizing: border-box;
+}
+.hits { display: grid; gap: 8px; }
+.hit { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 4px 14px; padding: 10px 0; border-bottom: 1px solid var(--line); font-family: var(--display); }
+.hit-meta { font-size: .85rem; color: var(--ink-2); }
+.hit-text { font-size: 1rem; line-height: 1.4; min-width: 0; }
+.hit mark { background: var(--signal-wash); color: inherit; border-radius: 3px; padding: 0 2px; }
+@media (max-width: 480px) { .hit { grid-template-columns: minmax(0, 1fr); } }
+
+/* Lists */
+.ledger { display: grid; gap: 0; max-width: 820px; }
+.ledger div { display: grid; grid-template-columns: minmax(0, 14rem) minmax(0, 1fr); gap: 6px 28px; padding: 16px 0; border-top: 1px solid var(--line); }
+.ledger dt, .ledger h3 { font-family: var(--display); font-weight: 600; font-size: 1.1rem; }
+.ledger p { font-size: 1.05rem; line-height: 1.5; color: var(--ink-2); }
+@media (max-width: 640px) { .ledger div { grid-template-columns: minmax(0, 1fr); } }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 4vw, 64px); }
+@media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.verdict-big { font-family: var(--display); font-weight: 700; font-size: clamp(1.4rem, 2.4vw, 2rem); letter-spacing: -0.02em; line-height: 1.1; }
+.ok { color: var(--tick); }
+.warn { color: var(--signal-ink); }
+ul.plain { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+ul.plain li { font-size: 1.08rem; line-height: 1.5; color: var(--ink-2); padding-left: 18px; position: relative; }
+ul.plain li::before { content: ""; position: absolute; left: 0; top: .62em; width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+
+.items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(24px, 4vw, 56px); max-width: 1100px; }
+.items.one { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 760px) { .items { grid-template-columns: minmax(0, 1fr); } }
+.items > div { display: grid; gap: 4px; padding: 14px 0; border-top: 1px solid var(--line); min-width: 0; }
+.items h3 { font-size: 1.08rem; }
+.items p { font-size: 1rem; line-height: 1.45; color: var(--ink-2); }
+.col-head { font-size: 1.4rem; }
+.modes { display: grid; gap: 6px; padding: 16px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.modes p { font-size: 1.02rem; line-height: 1.5; color: var(--ink-2); }
+.cost-wrap { overflow-x: auto; max-width: 900px; }
+.cost { width: 100%; border-collapse: collapse; font-family: var(--display); }
+.cost th, .cost td { text-align: left; padding: 12px 16px 12px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.cost thead th { font-size: .85rem; font-weight: 600; color: var(--ink-2); border-top: 0; }
+.cost tbody th { font-weight: 500; font-size: 1rem; max-width: 30ch; }
+.cost td { font-size: 1.1rem; white-space: nowrap; }
+.cost td:nth-child(4) { font-weight: 700; }
+.cost td.alt { color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--signal); }
+.versus { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 5vw, 80px); max-width: 900px; }
+@media (max-width: 560px) { .versus { grid-template-columns: minmax(0, 1fr); } }
+.side { display: grid; gap: 4px; padding-top: 16px; border-top: 4px solid var(--line); }
+.side.win { border-top-color: var(--signal); }
+.side .label { font-family: var(--display); font-weight: 600; font-size: 1.2rem; }
+.side strong { font-family: var(--display); font-weight: 700; font-size: clamp(3.5rem, 9vw, 7rem); line-height: 1; letter-spacing: -0.04em; }
+.side.lose strong { color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--signal); text-decoration-thickness: 4px; }
+.side .per { font-family: var(--display); color: var(--ink-2); }
+.closing h2 { max-width: 14ch; font-size: clamp(2.6rem, 6vw, 5rem); }
+</style>
+
+<main class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide" aria-label="Nudge">
+    <div class="split">
+      <div class="stack">
+        <h1>Nudge</h1>
+        <p class="lede">Den ven, der minder dig om dine venner. Nudge læser dine WhatsApp-chats og siger til, når der er nogen, du bør skrive til.</p>
+        <p class="note">Bygget på 2,5 time</p>
+      </div>
+      <div class="phone" aria-label="Låseskærm med en nudge">
+        <div class="lock-time num">07.45</div>
+        <div class="lock-date">onsdag 30. september</div>
+        <div class="notif arrive hero-notif">
+          <div class="notif-top"><span class="notif-app">Nudge</span><span>nu</span></div>
+          <div class="notif-title">Mads venter på et svar</div>
+          <div class="notif-body">Han har jobsamtale torsdag og vil gerne snakke i weekenden. Giv ham et kald?</div>
+        </div>
+      </div>
+    </div>
+    <span class="slide-no num"></span>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide" aria-label="Problemet">
+    <div class="split">
+      <div class="stack">
+        <h2>Du glemmer ikke folk. Du glemmer bare at skrive.</h2>
+        <p class="body">En besked bliver læst på vej ud ad døren. Et »det sender jeg i morgen« bliver aldrig sendt. En ven, du talte med hver anden dag, bliver stille, og ingen af jer opdager det.</p>
+      </div>
+      <div class="chat" aria-label="Eksempel på en chat, der er gået i stå">
+        <span class="day">24. august</span>
+        <div class="bubble">Har du set lejligheden på Nørrebro? 😍<span class="meta num">18.02</span></div>
+        <div class="bubble me">Ja! Jeg sender dig linket til lejligheden i morgen<span class="meta num">18.40 <span class="ticks">✓✓</span></span></div>
+        <span class="gap-marker">Siden da: ingenting</span>
+        <span class="day">i dag</span>
+        <div class="bubble">Hey, lever du? 😅<span class="meta num">20.51</span></div>
+      </div>
+    </div>
+    <span class="slide-no num"></span>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide" aria-label="Hvad Nudge holder øje med">
+    <h2>Fire grunde til at række ud</h2>
+    <div class="flags">
+      <div class="flag soft">
+        <h3>Ubesvaret</h3>
+        <p>De skrev sidst, og beskeden venter på dig. Et »godnat« eller en tommelfinger tæller ikke.</p>
+        <span class="quote">»Har du tid til at snakke i weekenden?«</span>
+      </div>
+      <div class="flag soft">
+        <h3>Løfte</h3>
+        <p>Du sagde, du ville gøre noget, og det er ikke sket.</p>
+        <span class="quote">»Jeg sender dig linket i morgen«</span>
+      </div>
+      <div class="flag soft">
+        <h3>Opfølgning</h3>
+        <p>De nævnte noget kommende i deres liv, som en god ven spørger ind til bagefter.</p>
+        <span class="quote">»Jeg har jobsamtale på torsdag«</span>
+      </div>
+      <div class="flag">
+        <h3>Brudt rytme</h3>
+        <p>I plejer at skrive tit, og nu har det været stille længere end normalt for jer to.</p>
+        <span class="quote">Regnes ud fra jeres egen historik</span>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="soft"></i>Jev læser beskederne</span>
+      <span><i></i>Koden regner på tidspunkterne</span>
+      <span>Løse planer, tungt emne og hvor meget det haster tæller også med</span>
+    </div>
+    <span class="slide-no num"></span>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" aria-label="Demo">
+    <div class="stack">
+      <h2>Demo</h2>
+      <p class="body">Fire opdigtede chats. Tallene er Jevs rigtige svar fra testkørslen. Søgning og »hvem bør jeg skrive til?« vises live bagefter.</p>
+    </div>
+    <div class="demo">
+      <div class="stack">
+        <div class="controls">
+          <button type="button" id="run">Kør Nudge igen</button>
+          <span class="threshold num">Nudge ved en score på 0,60 eller mere</span>
+        </div>
+        <div class="rows" id="rows"></div>
+      </div>
+      <div class="phone" aria-label="Telefon med de nudges, demoen sendte">
+        <div class="lock-time num">07.45</div>
+        <div class="lock-date">onsdag 30. september</div>
+        <div id="inbox" class="stack" style="gap:10px"></div>
+      </div>
+    </div>
+    <span class="slide-no num"></span>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide" aria-label="Sådan virker det">
+    <div class="stack">
+      <h2>Klassificér én gang. Spørg så tit, du vil.</h2>
+      <p class="body">Jev bliver spurgt én gang per ny besked i en chat. Alt andet genbruges fra sidste kørsel, så et spørgsmål uden nye beskeder koster ingenting.</p>
+    </div>
+    <div class="pipe">
+      <div class="step"><span class="owner">WhatsApp</span><h3>Læs chats</h3><p>En lokal bro henter dine beskeder til en database på din egen Mac. Den kan kun læse.</p></div>
+      <div class="step"><span class="owner">Kode</span><h3>Find det nye</h3><p>Chats med en ny sidste besked. Rytme og stilhed regnes igen for resten uden at læse dem.</p></div>
+      <div class="step jev"><span class="owner">Jev</span><h3>Vurdér det nye</h3><p>Seks ja/nej-spørgsmål, syv i grupper, og en score for, hvor meget det haster. Kun de sidste 10 beskeder.</p></div>
+      <div class="step"><span class="owner">Kode</span><h3>Beslut og gem</h3><p>Vægtede flag og dine egne markeringer (klaret, snooze, slå fra) bliver til én score, som gemmes til næste gang.</p></div>
+      <div class="step"><span class="owner">Claude</span><h3>Svar</h3><p>Når du spørger Claude. Svaret bygger på det gemte resultat, ikke på hele din historik.</p></div>
+      <div class="step"><span class="owner">ntfy</span><h3>Push</h3><p>Sendes kun, når du beder om det. Samme besked giver aldrig to nudges.</p></div>
+    </div>
+    <p class="note">Jev svarer på omkring 100 ms og koster $0,042 per million input-tokens ifølge TypeSafe.</p>
+    <span class="slide-no num"></span>
+  </section>
+
+  <!-- 5b -->
+  <section class="slide" aria-label="Hvad koster det">
+    <h2>91 % billigere med Jev</h2>
+    <div class="versus">
+      <div class="side win"><span class="label">Jev + Haiku</span><strong class="num">$0,85</strong><span class="per">om måneden</span></div>
+      <div class="side lose"><span class="label">Kun Haiku</span><strong class="num">$9,60</strong><span class="per">om måneden</span></div>
+    </div>
+    <p class="body">Ved 100 chats med nye beskeder og 10 spørgsmål om dagen.</p>
+    <p class="note">Jevs pris er målt, Haikus er et overslag.</p>
+    <span class="slide-no num"></span>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide" aria-label="Future work">
+    <div class="stack">
+      <h2>Future work</h2>
+      <p class="body">Uden for scope i dag. Bevidst valgt fra for at nå en demo på 2,5 time.</p>
+    </div>
+    <div class="items">
+      <div><h3>En bot i stedet for push</h3><p>Nudgen kommer i Telegram eller WhatsApp, og du svarer »snooze«, »klaret« eller »skriv et udkast«.</p></div>
+      <div><h3>Udkast i din stemme</h3><p>Claude foreslår et svar ud fra jeres seneste beskeder. Du sender altid selv.</p></div>
+      <div><h3>Morgenrunde</h3><p>Én push hver morgen med dagens vigtigste, og ellers ro resten af dagen.</p></div>
+      <div><h3>Fødselsdage og nærhed</h3><p>Koble kontakter til dine egne noter, så fødselsdage og nære venner vægter med.</p></div>
+      <div><h3>Billeder og talebeskeder</h3><p>Nudge læser kun tekst i dag.</p></div>
+      <div><h3>Uden Mac'en</h3><p>Broen på en server, så Nudge kører, mens computeren sover.</p></div>
+      <div><h3>Officiel datakilde</h3><p>Broen er en uofficiel WhatsApp-klient og bryder vilkårene. Til eget brug er det i orden, et produkt kræver noget officielt.</p></div>
+      <div><h3>GDPR før andre brugere</h3><p>Brugerens venner har ikke sagt ja. Det kræver et lovligt grundlag og databehandleraftaler med Jev og Claude.</p></div>
+    </div>
+    <span class="slide-no num"></span>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide closing" aria-label="Afslutning">
+    <div class="split">
+      <div class="stack">
+        <h2>Skriv til én, du savner, i aften.</h2>
+        <p class="lede">Eller lad Nudge minde dig om det.</p>
+      </div>
+      <div class="chat" aria-label="En kort chat, der starter igen">
+        <div class="bubble me">Hey! Hvordan gik jobsamtalen? 🤞<span class="meta num">21.32 <span class="ticks">✓✓</span></span></div>
+        <div class="bubble">Åh, hvor sødt du husker det. Jeg fik jobbet!!<span class="meta num">21.34</span></div>
+      </div>
+    </div>
+    <span class="slide-no num"></span>
+  </section>
+
+</main>
+
+<script>
+(() => {
+  const deck = document.getElementById("deck");
+  const slides = [...deck.querySelectorAll(".slide")];
+  slides.forEach((s, i) => { const n = s.querySelector(".slide-no"); if (n) n.textContent = `${i + 1} / ${slides.length}`; });
+
+  // Keyboard paging
+  const current = () => {
+    const top = deck.scrollTop + deck.clientHeight * 0.4;
+    let idx = 0;
+    slides.forEach((s, i) => { if (s.offsetTop <= top) idx = i; });
+    return idx;
+  };
+  document.addEventListener("keydown", e => {
+    if (e.target.matches("input, textarea")) return;
+    const next = ["ArrowDown", "ArrowRight", "PageDown", " "].includes(e.key);
+    const prev = ["ArrowUp", "ArrowLeft", "PageUp"].includes(e.key);
+    if (!next && !prev) return;
+    e.preventDefault();
+    const i = Math.max(0, Math.min(slides.length - 1, current() + (next ? 1 : -1)));
+    slides[i].scrollIntoView();
+  });
+
+  // Demo: real Jev answers from the test run on the fictional chats
+  const chats = [
+    { name: "Højskole-holdet", last: "Emil: »Carl, kan du booke hytten inden fredag?«",
+      bars: [["Ubesvaret", .96], ["Løfte", .62], ["Opfølgning", .10], ["Brudt rytme", 0, "code"], ["Løs plan", .78], ["Tungt emne", .02], ["Haster", .53], ["Rettet mod dig", .96]], score: 2.02,
+      flags: "Ubesvaret og løs plan",
+      push: ["Emil spørger dig om hytten", "Han vil gerne have den booket inden fredag."] },
+    { name: "Mads", last: "Mads: »Jeg har jobsamtale hos Novo på torsdag, er ret nervøs. Har du tid til at snakke i weekenden?«",
+      bars: [["Ubesvaret", .97], ["Løfte", .10], ["Opfølgning", .97], ["Brudt rytme", 0, "code"], ["Løs plan", .34], ["Tungt emne", .62], ["Haster", .51]], score: 1.93,
+      flags: "Ubesvaret og opfølgning",
+      push: ["Mads venter på et svar", "Han har jobsamtale torsdag og vil gerne snakke i weekenden. Giv ham et kald?"] },
+    { name: "Sofie", last: "Dig: »Jeg sender dig linket til lejligheden i morgen«",
+      bars: [["Ubesvaret", .27], ["Løfte", .94], ["Opfølgning", .08], ["Brudt rytme", 1, "code"], ["Løs plan", .29], ["Tungt emne", .03], ["Haster", .86]], score: 1.89,
+      flags: "Løfte og brudt rytme",
+      push: ["Du lovede Sofie et link", "Linket til lejligheden på Nørrebro. Det er et stykke tid siden, I har snakket."] },
+    { name: "Jonas", last: "Jonas: »godnat 😴«",
+      bars: [["Ubesvaret", .11], ["Løfte", .04], ["Opfølgning", .03], ["Brudt rytme", 0, "code"], ["Løs plan", .07], ["Tungt emne", .03], ["Haster", .06]], score: 0.20,
+      flags: "Ingen nudge. Et godnat kræver ikke svar", push: null },
+  ];
+  const ACT_AT = 0.6, YES = 0.7;
+  const fmt = v => v.toFixed(2).replace(".", ",");
+  const rows = document.getElementById("rows");
+  const inbox = document.getElementById("inbox");
+  rows.innerHTML = chats.map((c, i) => `
+    <div class="row" id="row${i}">
+      <div class="row-head">
+        <span class="row-name">${c.name}</span>
+        <span class="verdict num" id="verdict${i}">score ${fmt(c.score)}</span>
+        <span class="row-last">${c.last}</span>
+      </div>
+      <div class="bars">${c.bars.map(([label, v, kind]) => `
+        <div class="bar"><div class="bar-top"><span>${label}</span><span class="num">${kind === "code" ? (v ? "ja" : "nej") : fmt(v)}</span></div>
+        <div class="track"><div class="fill ${kind === "code" ? "code" : v >= YES ? "yes" : ""}" data-v="${v}"></div></div></div>`).join("")}
+      </div>
+      <div class="note">${c.flags}</div>
+    </div>`).join("");
+
+  const notifHTML = (c, animate) => `
+    <div class="notif ${animate ? "arrive" : ""}">
+      <div class="notif-top"><span class="notif-app">Nudge</span><span>nu</span></div>
+      <div class="notif-title">${c.push[0]}</div>
+      <div class="notif-body">${c.push[1]}</div>
+    </div>`;
+
+  const settle = (i, animate) => {
+    const c = chats[i], row = document.getElementById(`row${i}`);
+    row.querySelectorAll(".fill").forEach(f => f.style.width = `${f.dataset.v * 100}%`);
+    const act = c.score >= ACT_AT;
+    row.classList.toggle("act", act);
+    document.getElementById(`verdict${i}`).textContent = act ? `nudge, ${fmt(c.score)}` : `ingen nudge, ${fmt(c.score)}`;
+    if (act) inbox.insertAdjacentHTML("afterbegin", notifHTML(c, animate));
+  };
+
+  // Resting state: the finished run
+  chats.slice().reverse().forEach((_, k) => settle(chats.length - 1 - k, false));
+  inbox.innerHTML = chats.filter(c => c.score >= ACT_AT).map(c => notifHTML(c, false)).join("");
+
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let timers = [];
+  document.getElementById("run").addEventListener("click", () => {
+    timers.forEach(clearTimeout); timers = [];
+    inbox.innerHTML = "";
+    chats.forEach((c, i) => {
+      const row = document.getElementById(`row${i}`);
+      row.classList.remove("act");
+      row.querySelectorAll(".fill").forEach(f => f.style.width = "0");
+      document.getElementById(`verdict${i}`).textContent = "vurderer…";
+    });
+    const order = [3, 2, 1, 0]; // push stack ends with the highest score on top
+    order.forEach((i, k) => timers.push(setTimeout(() => settle(i, !reduce), reduce ? 0 : 400 + k * 900)));
+  });
+
+})();
+</script>

@@ -1,0 +1,10 @@
+[project]
+name = "nudge"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=1.2,<2",
+]
+
+[project.scripts]
+nudge = "nudge.__main__:main"

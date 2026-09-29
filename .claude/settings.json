@@ -1,0 +1,31 @@
+{
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": [
+      "mcp__whatsapp__search_contacts",
+      "mcp__whatsapp__list_messages",
+      "mcp__whatsapp__list_chats",
+      "mcp__whatsapp__get_chat",
+      "mcp__whatsapp__get_direct_chat_by_contact",
+      "mcp__whatsapp__get_contact_chats",
+      "mcp__whatsapp__get_last_interaction",
+      "mcp__whatsapp__get_message_context",
+      "Bash(uv run -q python -m nudge:*)",
+      "mcp__nudge__who_to_reach_out_to",
+      "mcp__nudge__explain_contact",
+      "mcp__nudge__nudge_history",
+      "mcp__nudge__notes_about",
+      "mcp__nudge__search_chats",
+      "mcp__nudge__show_pipeline",
+      "mcp__nudge__demo",
+      "mcp__nudge__set_thread_status",
+      "mcp__nudge__list_thread_statuses"
+    ],
+    "deny": [
+      "mcp__whatsapp__send_message",
+      "mcp__whatsapp__send_file",
+      "mcp__whatsapp__send_audio_message",
+      "mcp__whatsapp__download_media"
+    ]
+  }
+}
