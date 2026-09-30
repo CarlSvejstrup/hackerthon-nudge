@@ -106,3 +106,10 @@ Measured: a Jev call on 10 messages is about 1,000 input tokens, or $0.00004. At
 | `ROUTINE.md` | Instructions for a scheduled Claude routine that pushes nudges (not active) |
 | `CONTEXT.md`, `docs/adr/` | Glossary and design decisions |
 | `FUTURE-WORK.md` | What was left out, and why |
+
+## Team
+
+Built at the hackathon by:
+
+- Carl Schmidt-Svejstrup ([@CarlSvejstrup](https://github.com/CarlSvejstrup))
+- Mikkel Broch-Lips ([@mbrochlips](https://github.com/mbrochlips))
