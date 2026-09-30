@@ -76,14 +76,33 @@ uv run python -m nudge status Mads snoozed --until 2026-10-03
 uv run python -m nudge log              # recent runs and nudges
 ```
 
-### With Claude
+## Nudge MCP
 
-`.mcp.json` registers two MCP servers for Claude Code in this folder:
+The core of the project is our own MCP server, `nudge/mcp_server.py`. It lets Claude answer "who should I write to?" from the stored classification, so a question without new messages costs no Jev call and reads no chat history. It never sends a WhatsApp message and never pushes to the phone.
 
-- **nudge**: `who_to_reach_out_to`, `explain_contact`, `demo`, `show_pipeline`, `set_thread_status`, `list_thread_statuses`, `nudge_history`, `notes_about`, `search_chats`.
-- **whatsapp**: read tools from lharries/whatsapp-mcp. The send tools are denied in `.claude/settings.json`.
+| Tool | What it does |
+|---|---|
+| `who_to_reach_out_to` | Classifies new messages, then returns the contacts to reach out to, highest score first, with flags, notes and last nudge |
+| `explain_contact` | Why one contact is or is not flagged: every Jev answer, the score and notes |
+| `demo` | The whole stage demo in one view: pipeline stages with timings, a ranked list with score bars, and why the top contacts won |
+| `show_pipeline` | Only the pipeline stages and how the top scores were built |
+| `set_thread_status` | Mark a chat done, snoozed until a date, muted, flagged or back to open |
+| `list_thread_statuses` | Every chat you have marked |
+| `nudge_history` | Recent runs (Jev calls, cache hits) and the nudges sent |
+| `notes_about` | What Nudge has learned about a person from earlier runs |
+| `search_chats` | Full-text search across all WhatsApp messages |
 
-Open Claude Code in this folder and ask "who should I write to?". The `/nudge-demo` skill runs the stage demo.
+`.mcp.json` registers it for Claude Code in this folder, together with the read tools from lharries/whatsapp-mcp. The WhatsApp send tools are denied in `.claude/settings.json`. Open Claude Code here and ask "who should I write to?".
+
+## Skill: `/nudge-demo`
+
+`.claude/skills/nudge-demo/SKILL.md` runs the hackathon demo in Claude Code:
+
+1. Checks that the WhatsApp bridge is running.
+2. Calls the Nudge MCP's `demo` tool and shows the view as it is.
+3. Offers the next moves: "why [name]?", "[name] is done" or "mute [name]", and "show the conversation with [name]".
+
+Type `/nudge-demo` for the cached run, or `/nudge-demo live` to classify with Jev on stage. It never sends anything.
 
 ## Data and privacy
 
