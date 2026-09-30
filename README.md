@@ -1,10 +1,11 @@
 # Nudge
 
+> **Hackathon project.** Built in 2.5 hours on 29 September 2026. It is a working prototype, not a maintained product: expect rough edges, hard-coded choices and no tests. It uses an unofficial WhatsApp client, which breaks WhatsApp's terms and can get the linked number banned. Use it on your own account, at your own risk.
+
 Nudge reads your own WhatsApp chats and tells you who you should reply to, follow up with or reach out to, before a friendship quietly drifts.
 
 It runs locally on your Mac. A small classifier ([Jev](https://docs.typesafe.ai/)) judges each chat once per new message, plain code turns that into a priority score, and you ask Claude "who should I write to?" through an MCP server. Nudge never sends a WhatsApp message.
 
-Built in 2.5 hours at a hackathon.
 
 ## How it works
 
