@@ -7,3 +7,6 @@ vendor/whatsapp-mcp/whatsapp-bridge/store.old/
 .venv/
 *.db
 *.log
+.nudge-state.json
+.DS_Store
+*.bak

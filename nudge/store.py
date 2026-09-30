@@ -53,11 +53,18 @@ def connect() -> sqlite3.Connection:
     return con
 
 
+RETIRED_KEYS = ("urgency", "urgency_confidence")   # Jev no longer asked; older rows still carry them
+
+
+def clean_jev(jev: dict) -> dict:
+    return {k: v for k, v in jev.items() if k not in RETIRED_KEYS}
+
+
 def cached_judgement(con, c: Contact) -> dict | None:
     """Jev is only asked again when the chat has a new last message."""
     row = con.execute("SELECT jev FROM judgements WHERE jid = ? AND last_message_id = ?",
                       (c.jid, c.last.id)).fetchone()
-    return json.loads(row[0]) if row else None
+    return clean_jev(json.loads(row[0])) if row else None
 
 
 def save_judgement(con, c: Contact) -> None:
@@ -120,7 +127,7 @@ def snapshot(con) -> dict[str, tuple]:
                     messages=[Message(last_id, sender or "", text or "", datetime.fromisoformat(last_at), bool(from_me))])
         c.close = bool(close)
         c.typical_gap = timedelta(seconds=gap) if gap else None
-        c.jev = json.loads(jev) if jev else {}
+        c.jev = clean_jev(json.loads(jev)) if jev else {}
         out[jid] = (source_ts, c)
     return out
 

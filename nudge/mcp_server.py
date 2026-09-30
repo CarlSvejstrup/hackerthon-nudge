@@ -30,7 +30,7 @@ def _snapshot(where: str = "", params: tuple = ()) -> list[dict]:
     out = []
     for r in rows:
         d = dict(zip(FIELDS, r))
-        d["reasons"], d["jev"] = json.loads(d["reasons"] or "[]"), json.loads(d["jev"] or "{}")
+        d["reasons"], d["jev"] = json.loads(d["reasons"] or "[]"), store.clean_jev(json.loads(d["jev"] or "{}"))
         d["last_nudged_at"] = store.last_nudge(con, d["jid"])
         d["notes"] = store.notes_for(con, d["jid"])
         out.append(d)

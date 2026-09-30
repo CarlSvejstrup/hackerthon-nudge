@@ -1,29 +1,13 @@
 {
   "mcpServers": {
     "whatsapp": {
-      "command": "/Users/carlschmidt-svejstrup/.local/bin/uv",
-      "args": [
-        "--directory",
-        "/Users/carlschmidt-svejstrup/code/personal/hackerthon-nudge/vendor/whatsapp-mcp/whatsapp-mcp-server",
-        "run",
-        "main.py"
-      ]
+      "command": "uv",
+      "args": ["--directory", "vendor/whatsapp-mcp/whatsapp-mcp-server", "run", "main.py"]
     },
     "nudge": {
-      "command": "/Users/carlschmidt-svejstrup/.local/bin/uv",
-      "args": [
-        "--directory",
-        "/Users/carlschmidt-svejstrup/code/personal/hackerthon-nudge",
-        "run",
-        "-q",
-        "python",
-        "-m",
-        "nudge.mcp_server"
-      ],
-      "env": {
-        "NUDGE_MIN_AGE_MIN": "0",
-        "NUDGE_WINDOW_DAYS": "365"
-      }
+      "command": "uv",
+      "args": ["run", "-q", "python", "-m", "nudge.mcp_server"],
+      "env": { "NUDGE_MIN_AGE_MIN": "0" }
     }
   }
 }
